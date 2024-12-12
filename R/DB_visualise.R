@@ -17,8 +17,8 @@
   warn_off = TRUE#FALSE #TRUE#TRUE#FALSE #
   load_from = "comp" #  "google" #   load the data from comp (computer) or from google (googlesheets) 
   #load_from =   "google" #  load the data from comp (computer) or from google (googlesheets) 
-  export = "acto" #"data", "acto" "d&a"
-  out_ = 'to_extract/'# where to export
+  export = "data"#"acto" #"data", "acto" "d&a"
+  out_ = 'Data/to_extract/'# where to export
   out_a = 'Outputs/Actograms/' # 'inc_extract/acto_original_03/'# where to export
   bip = TRUE
   which_data = c('check') # c('to_db','mont','check_PS2','check_WE','mb','rm_check')#c('ff')#c('to_db','mont','check_PS2','check_WE','mb','rm_check')#c('check_PS2')#c('vis')#
@@ -614,7 +614,6 @@ if(export %in% c("d&a","data")) {
   }
 
 # visualize 
-
  for (i in n$rowid){
  #for (i in n$rowid[21:length(n$rowid)]){ #c(n$rowid[1:2],n$rowid[4:length(n$rowid)])){#2){ #17:25){# #n$rowid[4:length(n$rowid)]) [83:length(n$rowid)]
  #for (i in n$rowid[7:length(n$rowid)]){#2){ #17:25){# #n$rowid[62:length(n$rowid)]) [83:length(n$rowid)]
@@ -902,7 +901,7 @@ if(export %in% c("d&a","data")) {
 
    # PLOT if data exist
      if(exists("b") == TRUE){ 
-       ni[, logger_off:=max(c(gi[, (taken)],gi_in[, (taken)],gi_out[, (taken)], ttni[, (taken)], hoi[, (taken)], dhti[,(taken)]))]
+       ni[, logger_off:=max(c(gi[, (taken)],gi_in[, (taken)],gi_out[, (taken)]))]
        # estimate incubation
          test = round(as.numeric(difftime(b$datetime_[2], b$datetime_[1], units = 'sec')))
          if(test == 5){
@@ -982,19 +981,19 @@ if(export %in% c("d&a","data")) {
        # limit data to those when nest was active
         if(extracted == TRUE) {
           # start limit
-             b = b[datetime_ > min(c(gi[, (placed)],gi_in[, (placed)],gi_out[, (placed)], ttni[, (placed)], hoi[, (placed)], dhti[,(placed)]))- 6*60*60]
+             b = b[datetime_ > min(c(gi[, (placed)],gi_in[, (placed)],gi_out[, (placed)]))]
           # end limit
             if(ni$nest%in%c('MPNR22BWST04','PABE21TBPL03')){
                 b = b[ datetime_ < ni[, end_]+72*60*60 ]
               }else if(ni$hatch_based_on%in% c('hatching g','hatching w')){
               b = b[ datetime_ < ni[, end_]+60*60*60 ]
               }else if(ni[, end_]+36*60*60 < b[ , min(datetime_)]){
-              b = b[datetime_ <  max(c(gi[, (taken)],gi_in[, (taken)],gi_out[, (taken)], ttni[, (taken)], hoi[, (taken)], dhti[,(taken)]))] 
+              b = b[datetime_ <  max(c(gi[, (taken)],gi_in[, (taken)],gi_out[, (taken)]))] 
               }else{b = b[ datetime_ < ni[, end_]+36*60*60 ]}      
           } 
       # export and plot 
         if(export == "data"){
-           save(b, ni, vi, gi, file = paste0(out_,ni$act_ID,"_",ni$sp,"_",ni$site,"_",ni$year,"_",ni$nest,'.RData'))
+           save(b, ni, vi, gi, vid, file = paste0(out_,ni$act_ID,"_",ni$sp,"_",ni$site,"_",ni$year,"_",ni$nest,'.RData'))
            print(paste(i, 'done')) #[13:length(n$rowid)]
           }else if(export == "acto"){
            source(here::here('R/fun_actogram.R'))
