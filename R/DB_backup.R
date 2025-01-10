@@ -7,10 +7,11 @@
   require(data.table)
   require(glue)
  
-  gs4_auth_configure(api_key = "AIzaSyB9F6fDLw9_HHvI1fUJZ1ebf3wyT8O7psw")
-  gs4_deauth()
+  gs4_auth_configure(api_key = "AIzaSyBthTLd1_tMO52sOV56EacVFji0IvKoc-A")
+  gs4_deauth() 
 
-  for_gs = "https://docs.google.com/spreadsheets/d/1cgjqxs81Ite2KRmkrmhwLkrqDfLd-Mwxduol6DdUYp8/edit#gid=1232479362" #for_gs = drive_get("uniparental_incubation")
+  for_gs = "https://docs.google.com/spreadsheets/d/1h4S3FpTtyno_3E6xr9U77j8tv9ooRnSSAEeVJm1pHIM/edit?usp=drive_link"
+  
 
   read_me = data.table(read_sheet(for_gs, sheet = 'READ_ME'))
   au = data.table(read_sheet(for_gs, sheet = 'authors', col_types = '????????c????c????'))

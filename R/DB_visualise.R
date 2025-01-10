@@ -17,7 +17,7 @@
   warn_off = TRUE#FALSE #TRUE#TRUE#FALSE #
   load_from = "comp" #  "google" #   load the data from comp (computer) or from google (googlesheets) 
   #load_from =   "google" #  load the data from comp (computer) or from google (googlesheets) 
-  export = "data"#"acto" #"data", "acto" "d&a"
+  export = "d&a" #"acto" #"acto" #"data", "acto" "d&a"
   out_ = 'Data/to_extract/'# where to export
   out_a = 'Outputs/Actograms/' # 'inc_extract/acto_original_03/'# where to export
   bip = TRUE
@@ -30,26 +30,29 @@
   adjust_ = TRUE #adjust visits for misinterpreted cases to generate proper hatching/laying
 
 # PACKAGES & SUPPORTING DATA
-  require(here)
-  source(here::here('R/utils.R'))
-
-  packages = c('anytime','data.table', 'DataEntry.validation', 'DT', 'foreach', 'ggplot2', 'ggthemes', 'glue','googledrive', 'googlesheets4', 'grid', 'htmlTable', 'lattice', 'lubridate', 'magrittr', 'maptools', 'openxlsx','plyr','raster','readxl','stringr','zoo')
+  require(here) 
+  source(here::here('R/utils.R')) # this code is for running the script utils.R, which is in directory. 
+  #In the next line, JMZ has changed the package "maptools" by "sf", since "maptools" is no longer available for installation and sf containst the crepescule . 
+  packages = c('anytime','data.table', 'DataEntry.validation', 'DT', 'foreach', 'ggplot2', 'ggthemes', 'glue','googledrive', 'googlesheets4', 'grid', 'htmlTable', 'lattice', 'lubridate', 'magrittr', 'terra', 'openxlsx','plyr','raster','readxl', 'sf', 'stringr','zoo')
   sapply(packages, function(x) suppressPackageStartupMessages(using(x)) )
   #devtools::install_github("mpio-be/DataEntry.validation", build_vignettes=TRUE)
+  
   source(here::here('R/fun_lay_inc_hatch_est.R'))
   source(here::here('R/dat_actogram_map.R'))
   source(here::here('R/fun_actogram.R'))
 
   # video data
-    vd = fread('Data/Data_NestBehaviour_Cams.csv')
-    setnames(vd, c('date', 'time','beh'), c('day', 'start_time','what'))
-    vd[,start_time := getime(as.POSIXct(start_time,format="%H:%M"))]
-    vd[,end_date := day]
-    vd[,end_time := start_time + 20/60/60]
-    vd[what %in% c('Incubating','Preening','Changing','Panting','WingOpening','EggTurning','BodyShaking'), col := 'black']
-    vd[is.na(col), col := 'grey']
+  # Fast read of the video datasheet
+   vd = fread('Data/Data_NestBehaviour_Cams.csv')
+  # change the column names of the the datasheet. The first vector (c) corresponds to old column names and the second vector to new names. 
+   setnames(vd, c('date', 'time','beh'), new=c('day', 'start_time','what'))
+   vd[,start_time := getime(as.POSIXct(start_time,format="%H:%M"))]
+   vd[,end_date := day]
+   vd[,end_time := start_time + 20/60/60]
+   vd[what %in% c('Incubating','Preening','Changing','Panting','WingOpening','EggTurning','BodyShaking'), col := 'black']
+   vd[is.na(col), col := 'grey']
 
-  # file lists
+   # file lists
     # MSR
     f = data.table(
       f = c(list.files(path = 'Data/MSR/', pattern = '.csv', recursive = TRUE, full.names = TRUE)),
@@ -206,9 +209,9 @@ if(warn_off == TRUE) options(warn=0)
 if(warn_off == TRUE) options(warn=2) 
 
 # TEMP CHECK - re-run and recheck these 309 nests - THEN DELETE
-  #unique(e$nest[!is.na(e$float_heigh) & e$float_height>-1]) 
-  #e[!is.na(float_height) & float_height>-1]
-  #length(unique(e[!is.na(float_height) & float_height>-1, nest]))
+  unique(e$nest[!is.na(e$float_heigh) & e$float_height>-1]) 
+  e[!is.na(float_height) & float_height>-1]
+  length(unique(e[!is.na(float_height) & float_height>-1, nest]))
 
 # Prepare metadata
   r[, correction:=as.numeric(difftime(datetime_real,datetime_, units='secs'))]
@@ -607,18 +610,20 @@ if(warn_off == TRUE) options(warn=2)
 if(warn_off == TRUE) options(warn=0)
 
 if(bip == FALSE){n = n[!species%in%c('AMGP', 'AMOY','BADO','BBPL', 'BLGO','BWST','COSA', 'DUNL','EUCU', 'EUGP','KEPL','LEYE','LITE','LRPL','NZDO','PUSA','RUTU','SESA', 'SLRA','TBPL','TESA','WBST','WOSA')]}
- 
+
 if(export %in% c("d&a","data")) {
     n = n[nest%in%u[days>0, nest]]
     n = n[MB_check.x %in% which_data_export] #%
   }
 
 # visualize 
+ #install.packages("suntools")
+ #library(suntools)
  for (i in n$rowid){
  #for (i in n$rowid[21:length(n$rowid)]){ #c(n$rowid[1:2],n$rowid[4:length(n$rowid)])){#2){ #17:25){# #n$rowid[4:length(n$rowid)]) [83:length(n$rowid)]
  #for (i in n$rowid[7:length(n$rowid)]){#2){ #17:25){# #n$rowid[62:length(n$rowid)]) [83:length(n$rowid)]
  #for (i in c(765)){
-   # i = 1
+   # i = 22
    
    # limit data to one nest
      ni = n[ rowid %in% i]
@@ -742,6 +747,9 @@ if(export %in% c("d&a","data")) {
        if(!"l_surface" %in% names(b)){b[,l_surface := NA]}
   
        # T/H probes were swapped, so this corrects for it
+         if(ni$nest %in%c('2022_A03','2022_A06', '2022_C02','2022_C06','2022_C09
+          2022_C16','2024_C02')){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface"))}  
+
          if(ni$site == 'AMVI' & ni$year %in% c(2022)){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }  
          
          if(ni$nest %in% c('VAPE22TEST04','BEVE22COSA3')){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }      
