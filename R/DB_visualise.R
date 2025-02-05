@@ -47,6 +47,7 @@
   # change the column names of the the datasheet. The first vector (c) corresponds to old column names and the second vector to new names. 
    setnames(vd, c('date', 'time','beh'), new=c('day', 'start_time','what'))
    vd[,start_time := getime(as.POSIXct(start_time,format="%H:%M"))]
+   vd[,day := as.Date(day, format = "%d/%m/%Y")]
    vd[,end_date := day]
    vd[,end_time := start_time + 20/60/60]
    vd[what %in% c('Incubating','Preening','Changing','Panting','WingOpening','EggTurning','BodyShaking'), col := 'black']
