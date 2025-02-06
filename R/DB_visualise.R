@@ -15,7 +15,7 @@
 # SETTINGS
   Sys.setenv(TZ="UTC") # set time to UTC to have always same time
   warn_off = TRUE#FALSE #TRUE#TRUE#FALSE #
-  load_from = "comp" #  "google" #   load the data from comp (computer) or from google (googlesheets) 
+  load_from = "google" #  "google" #   load the data from comp (computer) or from google (googlesheets) 
   #load_from =   "google" #  load the data from comp (computer) or from google (googlesheets) 
   export = "d&a" #"acto" #"acto" #"data", "acto" "d&a"
   out_ = 'Data/to_extract/'# where to export
@@ -23,7 +23,7 @@
   bip = TRUE
   which_data = c('check') # c('to_db','mont','check_PS2','check_WE','mb','rm_check')#c('ff')#c('to_db','mont','check_PS2','check_WE','mb','rm_check')#c('check_PS2')#c('vis')#
   which_data_export = c('check')
-  extracted = FALSE #extracted = TRUE  #FALSE #TFALSE#ALSE #TRUE  #limit data to those when nest was active
+  extracted = TRUE #extracted = FALSE #limit data to those when nest was active. Change to FALSE if you want to get actograms without acto_based info. 
   # Tools (start R from project folder - Sublime: cmd + shift +t)
   specific = NULL #,'MPNR21BWST03' # NULL #,'SVAL19REPHN4')#NULL #c('PRCU22LESE01')# c('LHHMS002','SVAL19REPHN4')  #NULL#, 'c2016-SSMB03', 'c2016-SSMB07')#NULL#c('18MSR002','SN1801','SN1808','CH01FP19','LHHMS001','KNBA19FERZ1','KNBA19FERV6','MEYN19LSPL02','MEYN19LSPL04','MEYN19LSPL15','TAVA19WAJA02','REPH050_19','MPNR20GPSN01','WEST20RUFF01','PODL20GRSN11','BRPO_2','20CPPN021','12rnphwe41','DUSE21COSN01','OLNO01','CATH01','PODL22RUFF01')#NULL #c('MPNR20GPSN01')#c("IT04CS","IT35RU","IT58RU")#NULL #c("PODL21GRSN20")# c("11rnphee54")#c("11rnphee54","12rnphwe16","12rnphmh72") #NULL #"12rnphwe05"#"e2017-WRLW06"#NULL #"MPNR20GPSN01"#"PRCU20LESE01" #NULL #"LIPS20COSN04"#c('REPH100_18','REPH021_19','REPH123_18', 'REPH009_19','REPH272_18')#NULL #"DUSE20BLGO03"#c('DUSE20COSN01','DUSE20COSN02')# "KNBA19FERJ1" #NULL# 'KNBA19PHAV10' #NULL#c('MEYN19TEST11') #NULL#c('KNBA19MINZ2') #NULL#c('ZACK19SAND08') #c('ZACK19SAND10') #NULL#c('ZACK19SAND10') # 'TS02','TS04','TS06', 'TS09') #NULL #c('19TAH040')#
  
@@ -50,7 +50,7 @@
    vd[,day := as.Date(day, format = "%d/%m/%Y")]
    vd[,end_date := day]
    vd[,end_time := start_time + 20/60/60]
-   vd[what %in% c('Incubating','Preening','Changing','Panting','WingOpening','EggTurning','BodyShaking'), col := 'black']
+   vd[!what %in% c('Absence'), col := 'black'] #vd[what %in% c('Incubating','Preening','Changing','Panting','WingOpening','EggTurning','BodyShaking'), col := 'black']
    vd[is.na(col), col := 'grey']
 
    # file lists
@@ -326,7 +326,9 @@ if(warn_off == TRUE) options(warn=2)
         n[rowid == i, laid_before_full := vii[egg %in% max(egg,na.rm = TRUE), max(start_)]]
         n[rowid == i, clutch_before_full := max(vii$egg,na.rm = TRUE)]
       }
-      }
+    }
+    
+    
 
 # TEMP
   #n= n[rowid!=281]    
@@ -585,6 +587,8 @@ if(warn_off == TRUE) options(warn=2)
      }
    }
 
+## ERROR TO SOLVE WITH  MARTIN ON 5 FEBRUARY 2025   
+   
 # update end_nest for nests ending between hatching and leaving and for failed ones
  # n[as.character(end_nest)=='Inf',end_nest := as.POSIXct(NA) ]
   for(i in n[end_nest%in%'Inf',rowid]){#13:16){#
@@ -620,11 +624,12 @@ if(export %in% c("d&a","data")) {
 # visualize 
  #install.packages("suntools")
  #library(suntools)
- for (i in n$rowid){
+ for (i in n$rowid) { 
+ 
  #for (i in n$rowid[21:length(n$rowid)]){ #c(n$rowid[1:2],n$rowid[4:length(n$rowid)])){#2){ #17:25){# #n$rowid[4:length(n$rowid)]) [83:length(n$rowid)]
  #for (i in n$rowid[7:length(n$rowid)]){#2){ #17:25){# #n$rowid[62:length(n$rowid)]) [83:length(n$rowid)]
  #for (i in c(765)){
-   # i = 22
+   # i = 3
    
    # limit data to one nest
      ni = n[ rowid %in% i]
@@ -747,24 +752,24 @@ if(export %in% c("d&a","data")) {
        if(!"l_nest" %in% names(b)){b[,l_nest := NA]}
        if(!"l_surface" %in% names(b)){b[,l_surface := NA]}
   
-       # T/H probes were swapped, so this corrects for it
-         if(ni$nest %in%c('2022_A03','2022_A06', '2022_C02','2022_C06','2022_C09
-          2022_C16','2024_C02')){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface"))}  
+       # T/H probes were swapped, so this code corrects for it
+         if(ni$nest %in%c('2022_A03','2022_A06', '2022_C06','2022_C09',
+        '2022_C16','2024_C02')){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface"))}  
 
-         if(ni$site == 'AMVI' & ni$year %in% c(2022)){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }  
+         #if(ni$site == 'AMVI' & ni$year %in% c(2022)){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }  
          
-         if(ni$nest %in% c('VAPE22TEST04','BEVE22COSA3')){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }      
-         if(ni$nest == 'PRCU21TBPL04'){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }      
+         #if(ni$nest %in% c('VAPE22TEST04','BEVE22COSA3')){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }      
+         #if(ni$nest == 'PRCU21TBPL04'){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }      
 
-         if(ni$site == 'SVAL' & ni$year %in% c(2019, 2020)){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }  
+       #if(ni$site == 'SVAL' & ni$year %in% c(2019, 2020)){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }  
   
-         if(ni$nest == 'TS08' & ni$year == 2019){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }  
+       # if(ni$nest == 'TS08' & ni$year == 2019){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }  
 
-         if(ni$nest =='LATE20BADO_CR022'){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }  
+       # if(ni$nest =='LATE20BADO_CR022'){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }  
 
-         if(ni$nest == 'MEYN21LSPL12'){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }  
+       # if(ni$nest == 'MEYN21LSPL12'){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) }  
 
-         if(ni$nest == 'PODL21GRSN20'){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) } 
+       # if(ni$nest == 'PODL21GRSN20'){ setnames(b,old = c("h_surface", "t_surface", "h_nest", "t_nest","l_nest","l_surface"), new = c("h_nest", "t_nest", "h_surface", "t_surface","l_nest","l_surface")) } 
   
        #b[, datetime_ := as.POSIXct(datetime_)]
        # adjust time for logger running in different time zone than field work
@@ -897,6 +902,8 @@ if(export %in% c("d&a","data")) {
       }  
       }
   
+  ##### RUN UNTIL HERE TO MAKE PROOFS AND FIND MISTAKES IN THE CODE, THEN RUN BELOW##
+        
    # get video data
     vid = copy(vdi)
 
@@ -988,7 +995,7 @@ if(export %in% c("d&a","data")) {
           #dfr$col_type=ifelse(dfr$type=='no',none_col, ifelse(dfr$type=='bip',bip_col, ifelse(  dfr$type=='uni',uni_col, NA)))  
        
        # limit data to those when nest was active
-        if(extracted == TRUE) {
+        if(extracted == FALSE) {
           # start limit
              b = b[datetime_ > min(c(gi[, (placed)],gi_in[, (placed)],gi_out[, (placed)]))]
           # end limit
