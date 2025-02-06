@@ -185,3 +185,4 @@
    unlink(here::here(glue('Reports/toFix_{format(Sys.time(),"%Y-%m-%d_%H%M")}_search_files')), recursive = TRUE, force = TRUE) 
 
 ### end
+   

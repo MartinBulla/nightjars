@@ -1,6 +1,6 @@
 #' Loads packages and installs those that are not in the library
 #' @param  vector of package names
-#' @export
+#' @export  
 
 using<-function(...) {
     libs<-unlist(list(...))
