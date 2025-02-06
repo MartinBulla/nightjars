@@ -12,6 +12,11 @@
 !/R/
 !/Outputs/
 !/Reports/
+!/HM_Models_Sladecek/
+!/PR/
+!/Protocols_Notes/
+!/.RData/
+!/Nightjars/
 
 # Ignore everything in freeze (even if in Except)
 freeze/
