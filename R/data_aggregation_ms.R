@@ -47,7 +47,7 @@
   dat_bout=NULL
   dat_light=NULL
   
-  # file=file_list[22]
+  # file=file_list[1]
   # datasets for nest attendance
   for(file in file_list){
     load(file)
@@ -68,7 +68,7 @@
     }
     # delete bouts defined as visit (maybe rather delete hours with visit?)
     #b=b[b$visit!=1,]  
-    
+    xtabs(~b$sex)
     # assign whole bouts with RFID record to the corresponding sex
     {
       for (i in unique(b$bout_att[b$prediction_final==1])){
@@ -131,9 +131,9 @@
            hr_num=hr_num[1],
            length_record=as.numeric(max(datetime_)-min(datetime_)),
            nest_att=mean(prediction_final),
-           att_m=length(sex[sex=="M"]),
-           att_f=length(sex[sex=="F"]),
-           att_u=length(sex[sex=="U"]),
+           att_m=length(na.omit(sex[sex=="M"])),
+           att_f=length(na.omit(sex[sex=="F"])),
+           att_u=length(na.omit(sex[sex=="U"])),
            amb_temp=mean(t_surface[!is.na(t_surface)]),
            nest_temp=mean(t_nest[!is.na(t_nest)]),
            amb_hum=mean(h_surface[!is.na(h_surface)]),
@@ -174,14 +174,14 @@
            hr_num=hr_num[1],
            length_record=length(datetime_)*5/3600,
            nest_att=mean(prediction_final),
-           att_m=length(sex[sex=="M"]),
-           att_f=length(sex[sex=="F"]),
-           att_u=length(sex[sex=="U"])),
+           att_m=length(na.omit(sex[sex=="M"])),
+           att_f=length(na.omit(sex[sex=="F"])),
+           att_u=length(na.omit(sex[sex=="U"]))),
          by=.(sunlight_state,nest)]
     dat_light=rbind(dat_light,bs)
     
     print(paste(file,Sys.time()))
-  save(dat_hour,dat_bout,dat_light,file="data_nightjars_aggregated.RData") 
+   save(dat_hour,dat_bout,dat_light,file="data_nightjars_aggregated.RData") 
   }
   
 }
